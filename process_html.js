@@ -458,35 +458,26 @@ function isolateImgs(htmlString) {
 }
 
 function convertToSmartQuotes(htmlString) {
-  // Create a regular expression to match straight quotes
-  var straightQuotesRegex = /("([^"]|\\")*")|('([^']|\\')*')/g;
+  // Split into segments: text nodes vs. HTML tags and {curly brace} expressions
+  var segments = htmlString.split(/(<[^>]+>|{[^}]*})/);
 
-  // Split the HTML string into segments that are inside and outside of HTML tags and { } characters
-  var segments = htmlString.split(/(<\/?[^>]+>)|({[^}]*})/);
-
-  // Define mapping for straight quotes to smart quotes
-  var smartQuotesMap = {
-    '"': {
-      opening: '“',
-      closing: '”'
-    },
-    "'": {
-      opening: '‘',
-      closing: '’'
-    }
-  };
-
-  // Iterate through the segments and convert straight quotes to smart quotes
   for (var i = 0; i < segments.length; i++) {
-    // Check if the segment is defined and not inside an HTML tag or inside { }
-    if (segments[i] && !segments[i].startsWith('<') && !segments[i].startsWith('{')) {
-      segments[i] = segments[i].replace(straightQuotesRegex, function(match) {
-        // Get the appropriate smart quote based on the straight quote type
-        var quoteType = match.charAt(0);
-        var smartQuote = smartQuotesMap[quoteType];
-        return smartQuote ? smartQuote.opening + match.slice(1, -1) + smartQuote.closing : match;
-      });
-    }
+    var seg = segments[i];
+    if (!seg || seg.startsWith('<') || seg.startsWith('{')) continue;
+
+    // Convert double quotes: opening if preceded by whitespace/opening punctuation or start of segment
+    seg = seg.replace(/"/g, function(match, offset, str) {
+      var before = offset > 0 ? str[offset - 1] : '';
+      return (/[\s\(\[\{]/.test(before) || before === '') ? '\u201c' : '\u201d';
+    });
+
+    // Convert single quotes: closing/apostrophe if preceded by a word character, otherwise opening
+    seg = seg.replace(/'/g, function(match, offset, str) {
+      var before = offset > 0 ? str[offset - 1] : '';
+      return /\w/.test(before) ? '\u2019' : '\u2018';
+    });
+
+    segments[i] = seg;
   }
 
   return segments.join('');
