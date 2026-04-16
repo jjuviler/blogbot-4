@@ -459,7 +459,7 @@ function isolateImgs(htmlString) {
 
 function convertToSmartQuotes(htmlString) {
   // Split into segments: text nodes vs. HTML tags and {curly brace} expressions
-  var segments = htmlString.split(/(<[^>]+>|{[^}]*})/);
+  var segments = htmlString.split(/(<[^>]+>|\{%[\s\S]*?%\}|\{[^}]*\})/);
 
   for (var i = 0; i < segments.length; i++) {
     var seg = segments[i];
