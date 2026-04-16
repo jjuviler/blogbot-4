@@ -196,8 +196,19 @@ function cleanCellHtml(html) {
 
   nodes.forEach(function (el) {
     var tag = el.tagName.toLowerCase();
-    var keepAttrs = tag === "a" ? ["href"] : [];
 
+    if (tag === "a") {
+      var href = el.getAttribute("href") || "";
+      // Strip Google redirect wrappers
+      var googleMatch = href.match(/^https?:\/\/www\.google\.com\/url\?q=([^&]+)/);
+      if (googleMatch) {
+        href = decodeURIComponent(googleMatch[1]);
+      }
+      // Set href using single quotes by rebuilding the attribute
+      el.setAttribute("href", href);
+    }
+
+    var keepAttrs = tag === "a" ? ["href"] : [];
     Array.from(el.attributes).forEach(function (attr) {
       if (!keepAttrs.includes(attr.name.toLowerCase())) {
         el.removeAttribute(attr.name);
@@ -214,6 +225,8 @@ function cleanCellHtml(html) {
   });
 
   var cleaned = container.innerHTML.trim();
+  // Convert href double quotes to single quotes to avoid conflicts with outer shortcode string delimiters
+  cleaned = cleaned.replace(/href="([^"]*)"/g, "href='$1'");
   var textOnly = cleaned.replace(/<[^>]*>/g, "").trim();
 
   return textOnly ? cleaned : "<p></p>";
