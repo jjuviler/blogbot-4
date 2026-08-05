@@ -3,9 +3,6 @@
 function processHTMLCode(htmlString, imgDetails) {
 	htmlString = updateImageSources(htmlString, imgDetails); // first, update image srcs to match their new URLs
     htmlString = cleanHTML(htmlString, imgDetails);			 // format the HTML for COS
-    if ($('#addTOC').is(':checked')) {
-        htmlString = tableOfContents(htmlString);           // add a TOC section
-    }			 
     checkHTML(htmlString);									 // check for style/formatting issues that need attention
     printCleanedHTML(htmlString);
 }
