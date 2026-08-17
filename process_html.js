@@ -37,6 +37,7 @@ function cleanHTML(htmlString, imgDetails) {
 
     // ===== implement SEO best practices =====
     htmlString = cleanAnchorHrefs(htmlString);          // remove query strings from URLs
+    htmlString = sanitizeAnchorHrefs(htmlString);       // strip accidental target= artifacts from URLs
     htmlString = replaceEntities(htmlString);           // replace all HTML entities (other than those for <, >, and &) with characters
     if ($("#checkbox-2").is(":checked")) { htmlString = openLinksInNewTab(htmlString); }    // set all non-anchor links to open in a new tab (and add a rel=noopener attribute)
 
@@ -309,6 +310,12 @@ function cleanAnchorHrefs(htmlString) {
         // Return the modified anchor tag with the new href value
         return `<a ${prefix}${newHref}${suffix}`;
     });
+}
+
+function sanitizeAnchorHrefs(htmlString) {
+  return htmlString.replace(/<a\s+([^>]*href=["'])([^"']*)(["'][^>]*>)/gi, function(match, pre, href, suf) {
+    return '<a ' + pre + href.replace(/%20target.*/i, '') + suf;
+  });
 }
 
 function cleanImgTags(htmlString) {
