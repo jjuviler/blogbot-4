@@ -3,8 +3,16 @@
 function processHTMLCode(htmlString, imgDetails) {
 	htmlString = updateImageSources(htmlString, imgDetails); // first, update image srcs to match their new URLs
     htmlString = cleanHTML(htmlString, imgDetails);			 // format the HTML for COS
+    checkTablesForLinks(htmlString);                         // warn if any tables contain hyperlinks
     checkHTML(htmlString);									 // check for style/formatting issues that need attention
     printCleanedHTML(htmlString);
+}
+
+function checkTablesForLinks(htmlString) {
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    const hasLinks = Array.from(doc.querySelectorAll('table')).some(t => t.querySelector('a'));
+    const warning = document.getElementById('table-links-warning');
+    if (warning) warning.style.display = hasLinks ? '' : 'none';
 }
 
 function printCleanedHTML (htmlString) {
@@ -20,6 +28,10 @@ function printCleanedHTML (htmlString) {
 // =====================================
 
 function cleanHTML(htmlString, imgDetails) {
+
+    // ===== strip Google Docs artifacts before any processing =====
+    htmlString = htmlString.replace(/<p\s[^>]*class="[^"]*\btitle\b[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+    htmlString = htmlString.replace(/<hr\b[^>]*>/gi, '');
 
     // ===== convert from Google Docs HTML output to CMS-ready HTML =====
     htmlString = createTempStyleAttributes(htmlString); // replace class attributes with style attributes in all tags
@@ -72,6 +84,9 @@ function cleanHTML(htmlString, imgDetails) {
 
     // ===== add editor's note =====
     if ($('#addEditorsNote').is(':checked')) { htmlString = addEditorsNote(htmlString); }   // add editor's note to the bottom of the post
+
+    // ===== table of contents =====
+    if ($('#add-toc').is(':checked')) { htmlString = tableOfContents(htmlString); }
 
     // ===== convert tables to HubL modules =====
     htmlString = convertTablesToHubLModules(htmlString);
@@ -140,41 +155,28 @@ function fixExtraImageText(htmlString) {
 }
 
 function createTempStyleAttributes(htmlString) {
-    // Create a new DOM parser
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
-
-    // Extract CSS rules from <style> tags
-    const styleSheets = doc.querySelectorAll('style');
     let styles = {};
-    styleSheets.forEach(sheet => {
-        const rules = sheet.sheet.cssRules;
-        for (const rule of rules) {
-            if (rule.selectorText && rule.style.cssText) {
-                rule.selectorText.split(',').forEach(selector => {
-                    selector = selector.trim();
-                    if (selector.startsWith('.')) { // Class selectors
-                        const className = selector.substring(1); // Remove the dot
-                        styles[className] = (styles[className] ? styles[className] + ' ' : '') + rule.style.cssText;
-                    }
-                });
+
+    doc.querySelectorAll('style').forEach(sheet => {
+        try {
+            const cssText = sheet.textContent || '';
+            const ruleRegex = /\.([a-zA-Z0-9_-]+)\s*\{([^}]+)\}/g;
+            let match;
+            while ((match = ruleRegex.exec(cssText)) !== null) {
+                const cls = match[1];
+                const props = match[2].trim();
+                styles[cls] = (styles[cls] ? styles[cls] + ' ' : '') + props;
             }
-        }
+        } catch(e) {}
     });
 
-    // Replace class attributes with style attributes
-    const elements = doc.querySelectorAll('[class]');
-    elements.forEach(el => {
+    doc.querySelectorAll('[class]').forEach(el => {
         let inlineStyle = '';
-        el.classList.forEach(className => {
-            if (styles[className]) {
-                inlineStyle += styles[className];
-            }
-        });
-        if (inlineStyle) {
-            el.setAttribute('style', inlineStyle.trim());
-        }
-        el.removeAttribute('class'); // Remove the class attribute
+        el.classList.forEach(cls => { if (styles[cls]) inlineStyle += styles[cls]; });
+        if (inlineStyle) el.setAttribute('style', inlineStyle.trim());
+        el.removeAttribute('class');
     });
 
     // Serialize the document back to HTML

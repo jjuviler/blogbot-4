@@ -233,12 +233,13 @@ function cleanCellHtml(html) {
 }
 
 function renderHubLTableModule(model) {
+  var uid = crypto.randomUUID();
   var out =
-    '{% module "table"\n' +
+    '{% module "table-' + uid + '"\n' +
     '  unique_in_loop=True,\n' +
     '  style={ "theme": "white" },\n' +
     '  path="/_Web Team Assets/Component Modules/modules/table",\n' +
-    '  label="table",\n';
+    '  label="table-' + uid + '",\n';
 
   if (model.tableName && model.tableName.trim()) {
     out += '  tableName="' +

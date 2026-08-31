@@ -57,16 +57,18 @@ function createFeaturedSnippets(htmlString) {
 
 // creates paragraph featured snippet code
 function createFsParagraphCode(items) {
-  return '{% module "featured_snippet" path="/_Web Team Assets/Component Modules/modules/featuredSnippet", label="featuredSnippet", content_type="paragraph", paragraph="' + items[1] + '", header="' + items[0] + '", style={ "theme": "white", "paddingTop": "xs", "paddingBottom": "xs" } %}';
+  var uid = crypto.randomUUID();
+  return '{% module "featured_snippet-' + uid + '" path="/_Web Team Assets/Component Modules/modules/featuredSnippet", label="featured_snippet-' + uid + '", content_type="paragraph", paragraph="' + items[1] + '", header="' + items[0] + '", style={ "theme": "white", "paddingTop": "xs", "paddingBottom": "xs" } %}';
 }
 
 // creates list featured snippet code
 function createFsListCode(items) {
+  var uid = crypto.randomUUID();
   var itemsStr = '';
   for (let i = 1; i < items.length; i++) {
     itemsStr += '"' + items[i] + '"';
     if (i != items.length - 1) { itemsStr += ', '; }
   }
 
-  return '{% module "featured_snippet" path="/_Web Team Assets/Component Modules/modules/featuredSnippet", label="featuredSnippet", listItems=[ ' + itemsStr + ' ], content_type="ordered_list", header="' + items[0] + '", style={ "theme": "white", "paddingTop": "xs", "paddingBottom": "xs" } %}';
+  return '{% module "featured_snippet-' + uid + '" path="/_Web Team Assets/Component Modules/modules/featuredSnippet", label="featured_snippet-' + uid + '", listItems=[ ' + itemsStr + ' ], content_type="ordered_list", header="' + items[0] + '", style={ "theme": "white", "paddingTop": "xs", "paddingBottom": "xs" } %}';
 }

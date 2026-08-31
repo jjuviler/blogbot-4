@@ -53,9 +53,6 @@
         document.getElementById('bb5-banner').style.display = 'none';
       }
     </script>
-    <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 14px 20px; width: 1000px; margin: 10px 0 0 12px; font-size: 1rem; box-sizing: border-box; box-shadow: 0 4px 24px rgba(0,0,0,0.06);">
-        <strong>Note:</strong> The "Add TOC" option has been removed because the new blog template adds a table of contents module automatically.
-    </div>
 <div class="main-content">
         <div class="column">
             <div class="container">
@@ -65,6 +62,8 @@
                         <input type="text" id="primaryKeyword" name="primaryKeyword" placeholder="primary keyword">
                     </div>
                     <div id="checkboxes">
+                        <input type="checkbox" id="add-toc">
+                        <label for="add-toc">Add table of contents</label><br>
                         <input type="checkbox" id="addEditorsNote">
                         <label for="addEditorsNote">Add editor's note</label>
                         <select id="monthSelect" disabled>
@@ -104,6 +103,9 @@
                             <button id="selectAll">Select All</button>
                             <button id="deselectAll">Deselect All</button>
                         </form>
+                    </div>
+                    <div id="table-links-warning" style="display:none; background-color:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:10px 14px; margin-bottom:10px; font-size:0.9rem;">
+                        ⚠️ <strong>Tables with links detected.</strong> HubSpot table modules do not support hyperlinks. Remove any links from your tables before uploading, or they will be lost.
                     </div>
                     <div id="drop-area">
                         <p>Drag and drop your ZIP file here or <label for="fileElem" id="file-upload-label">browse</label> for a file.</p>
